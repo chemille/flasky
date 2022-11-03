@@ -24,8 +24,26 @@ def create_dog():
     return make_response(f"Dog {new_dog.name} has been successfully created!", 201)
         
 @dogs_bp.route("", methods=["GET"])
-def get_all_dogs():
-    dogs = Dog.query.all()
+def handle_dogs():
+    dog_query = Dog.query
+    
+    breed_query = request.args.get("breed")
+    if breed_query:
+        ## exact string matching - case sensitive 
+        # dog_query = dog_query.filter_by(breed=breed_query)
+        ## partial filters - case sensitive
+        # dog_query = dog_query.filter(Dog.breed.contains(breed_query))
+        ## partial filter - case INsensitive
+        dog_query = dog_query.filter(Dog.breed.ilike(f"%{breed_query}%"))
+        
+    age_query = request.args.get("age")
+    if age_query:
+        dog_query = dog_query.filter_by(age=age_query)
+    
+    dogs = dog_query.all()
+    
+    # dogs = Dog.query.filter_by(breed=breed_query).filter_by(age=all).all()
+        
     dogs_response = []
     for dog in dogs:
         dogs_response.append({
@@ -34,7 +52,50 @@ def get_all_dogs():
             "age": dog.age,
             "gender": dog.gender
         }) 
-        return jsonify(dogs_response)
+        
+    if not dogs_response:
+        return make_response(jsonify(f"There are no {breed_query} dogs")) 
+        
+    return jsonify(dogs_response)
+
+
+    
+# Path/Endpoint to get a single dog
+# Include the if of the record to retrieve as a part of the endpoint
+@dogs_bp.route("/dog_id", methods=["GET", "PUT", "DELETE"])
+# Get /dog/id (single dog)
+def handle_dog(dog_id):
+    # Query our db to grab the dog that has the id we're looking for
+    dog = Dog.query.get(dog_id)
+    
+    if request.method == "GET":
+    # Specify what our response will be which is single json object or dict
+        return ({
+            "id": dog.id,
+            "name": dog.name,
+            "breed": dog.breed,
+            "age": dog.age,
+            "gender": dog.gender
+        })
+    elif request.method == "PUT":
+        request_body = request.get_json()
+        
+        # Updated dog attributes are set
+        dog.name = request_body['name'],
+        dog.breed = request_body['breed'],
+        dog.age = request_body['age'],
+        dog.gender = request_body['gender']
+        
+        # Update this dog in the database
+        db.session.commit()
+        
+        #Successful response
+        return make_response(f"Dog {dog.name} has been successfully updated!", 200)
+
+    elif request.method == "DELETE":
+        db.session.delete(dog)
+        db.session.commit()
+        return make_response(f"Dog {dog.name} has been successfully deleted!", 202)
 
 # # Hardcode data about dogs using blueprint
 # class Dog:
