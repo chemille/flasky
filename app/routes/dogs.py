@@ -90,12 +90,12 @@ def handle_dog(dog_id):
         db.session.commit()
         
         #Successful response
-        return make_response(f"Dog {dog.name} has been successfully updated!", 200)
+        return make_response(jsonify(f"Dog {dog.name} has been successfully updated!", 200))
 
     elif request.method == "DELETE":
         db.session.delete(dog)
         db.session.commit()
-        return make_response(f"Dog {dog.name} has been successfully deleted!", 202)
+        return make_response(jsonify(f"Dog {dog.name} has been successfully deleted!", 202))
 
 # # Hardcode data about dogs using blueprint
 # class Dog:
