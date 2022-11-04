@@ -35,8 +35,12 @@ def create_app(test_config=None):
     migrate.init_app(app, db)
     
     from app.models.dog_model import Dog
+    from app.models.caretaker import Caretaker
     
     from .routes.dogs import dogs_bp
     app.register_blueprint(dogs_bp)
+    
+    from .routes.caretaker_routes import caretaker_bp
+    app.register_blueprint(caretaker_bp)
 
     return app
