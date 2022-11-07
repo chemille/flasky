@@ -22,5 +22,5 @@ class Dog(db.Model):
             "name": self.name,
             "breed": self.breed,
             "age": self.age,
-            "gender": self.gender,
+            "gender": self.gender
         }

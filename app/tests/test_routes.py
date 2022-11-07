@@ -1,7 +1,7 @@
 from app.models.dog_model import Dog
 
 def test_get_all_dogs_with_empty_db_return_empty_list(client):
-    #'client' is the ficture we registered fromt he conftest.py
+    #'client' is the fixture we registered from the conftest.py
     # pytest automatically tries to match each test param to a
     # fixture with the same name.
     

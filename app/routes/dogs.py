@@ -62,11 +62,11 @@ def handle_dogs():
     
 # Path/Endpoint to get a single dog
 # Include the if of the record to retrieve as a part of the endpoint
-@dogs_bp.route("/dog_id", methods=["GET", "PUT", "DELETE"])
+@dogs_bp.route("/<id>", methods=["GET", "PUT", "DELETE"])
 # Get /dog/id (single dog)
-def handle_dog(dog_id):
+def handle_dog(id):
     # Query our db to grab the dog that has the id we're looking for
-    dog = Dog.query.get(dog_id)
+    dog = Dog.query.get(id)
     
     if request.method == "GET":
     # Specify what our response will be which is single json object or dict
