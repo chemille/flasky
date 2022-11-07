@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, abort, make_response, request
 from app import db
 from app.models.dog_model import Dog
+from app.routes.routes_helper import error_message, get_record_by_id
 
 dogs_bp = Blueprint('dogs_bp', __name__, url_prefix='/dogs') # this blueprint allows us to use the endpoint '/dogs'
 
@@ -11,12 +12,16 @@ def create_dog():
     if "name" not in request_body or "breed" not in request_body:
         return make_response("Invalid Request, Name * Breed Cant Be Empty", 400)
     
-    new_dog = Dog(
-        name = request_body['name'],
-        breed = request_body['breed'],
-        age = request_body['age'],
-        gender = request_body['gender']
-    )
+    ## creates dog instance
+    # new_dog = Dog(
+    #     name = request_body['name'],
+    #     breed = request_body['breed'],
+    #     age = request_body['age'],
+    #     gender = request_body['gender']
+    # )
+    
+    ##refactored version
+    new_dog = Dog.from_dict(request_body)
     
     db.session.add(new_dog)
     db.session.commit()
@@ -44,14 +49,17 @@ def handle_dogs():
     
     # dogs = Dog.query.filter_by(breed=breed_query).filter_by(age=all).all()
         
-    dogs_response = []
-    for dog in dogs:
-        dogs_response.append({
-            "name": dog.name,
-            "breed": dog.breed,
-            "age": dog.age,
-            "gender": dog.gender
-        }) 
+    # dogs_response = []
+    # for dog in dogs:
+    #     dogs_response.append({
+    #         "name": dog.name,
+    #         "breed": dog.breed,
+    #         "age": dog.age,
+    #         "gender": dog.gender
+    #     }) 
+    
+    ## refactored version
+    dogs_response = [dog.to_dict() for dog in dogs] # list comprehension
         
     if not dogs_response:
         return make_response(jsonify(f"There are no {breed_query} dogs")) 
@@ -66,25 +74,38 @@ def handle_dogs():
 # Get /dog/id (single dog)
 def handle_dog(id):
     # Query our db to grab the dog that has the id we're looking for
-    dog = Dog.query.get(id)
+    # dog = Dog.query.get(id)
+    
+    ## refactored
+    dog = get_record_by_id(Dog, id)
     
     if request.method == "GET":
     # Specify what our response will be which is single json object or dict
-        return ({
-            "id": dog.id,
-            "name": dog.name,
-            "breed": dog.breed,
-            "age": dog.age,
-            "gender": dog.gender
-        })
+        # return ({
+        #     "id": dog.id,
+        #     "name": dog.name,
+        #     "breed": dog.breed,
+        #     "age": dog.age,
+        #     "gender": dog.gender
+        # })
+        
+        ## refactored version
+        return dog.to_dict(), 200
+        # underneath the hood flask transforms python dicts into json dicts?
+        # If there is anything that is not a dict, you need to use jsonify
+    
     elif request.method == "PUT":
         request_body = request.get_json()
         
-        # Updated dog attributes are set
-        dog.name = request_body['name'],
-        dog.breed = request_body['breed'],
-        dog.age = request_body['age'],
-        dog.gender = request_body['gender']
+        ## Updated dog attributes are set
+        # dog.name = request_body['name'],
+        # dog.breed = request_body['breed'],
+        # dog.age = request_body['age'],
+        # dog.gender = request_body['gender']
+        ## what are some edge cases that could go wrong here? missing attr, no name 
+        
+        ## refactored version
+        dog.update(request_body) # this is just a fx without a return value, so it does not need to be assigned to a variable
         
         # Update this dog in the database
         db.session.commit()
@@ -96,24 +117,6 @@ def handle_dog(id):
         db.session.delete(dog)
         db.session.commit()
         return make_response(jsonify(f"Dog {dog.name} has been successfully deleted!", 202))
-
-# # Hardcode data about dogs using blueprint
-# class Dog:
-#     def __init__(self, id, name, breed, age, gender):
-#         self.id = id
-#         self.name = name
-#         self.breed = breed
-#         self.age = age
-#         self.gender = gender
-
-# # create list of dog instances (our mini database)    
-# DOGS = [
-#     Dog(1, 'John Cena', "pug", 34, "Male"),
-#     Dog(2, 'Snoop', "hair doberman", 14, "Female"),
-#     Dog(3, "Doug 'the Doctor', M.D.", "pompom", 10, "Male")  
-# ]
-
-# # now we need to provide a way to allow clients to access this list
 
 
 # @dogs_bp.route("", methods=['GET']) # decorators extend the functionality of a fx. Always above of fx.

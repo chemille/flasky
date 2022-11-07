@@ -49,7 +49,7 @@ def create_dog(id):
 
     return make_response(jsonify(f"Dog {new_dog.name} cared by {caretaker.name} successfully created"), 201)
 
-@caretaker_bp.route("/<id>/dogs", methods=["GET"])
+@caretaker_bp.route("/<id>/dogs", methods=["GET"]) # Here we provide a caretaker id in <id>
 def read_dogs_of_caretaker(id):
     caretaker = Caretaker.query.get(id)
 
@@ -60,5 +60,6 @@ def read_dogs_of_caretaker(id):
     #     dog_response.append(dog.to_dict()) #or dictionary literal
 
     dog_response = [dog.to_dict() for dog in caretaker.dogs] # list comprehension
+    # We use .to_dict() which is an instance method of Dog 
 
     return(jsonify(dog_response))
